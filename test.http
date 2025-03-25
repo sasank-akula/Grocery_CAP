@@ -1,0 +1,64 @@
+###
+POST   http://localhost:4004/odata/v4/grocery/Customers
+Content-Type: application/json
+
+{
+    "name": "Sasank Akula",
+    "email": "sasank@example.com",
+    "address": "lorem epsum",
+    "phoneNumber": "+91 9849801762"
+}
+
+###
+POST   http://localhost:4004/odata/v4/grocery/Orders
+Content-Type: application/json
+
+{
+      
+      "orderDate": "2003-05-12",
+      "totalAmount": 0,
+      "customer_ID": "4d7a8a33-1240-45a6-9362-68402fbe9277"
+}
+
+###
+POST   http://localhost:4004/odata/v4/grocery/OrderItems
+Content-Type: application/json
+
+{
+  "quantity": 10,
+  "itemPrice": 0,
+  "totalItemPrice": 0,
+  "order_ID": "1010",
+  "item_ID": "6db536d1-06db-4783-97b6-802b18905111"
+}
+
+
+
+
+###
+POST   http://localhost:4004/odata/v4/grocery/Items
+Content-Type: application/json
+
+ {
+      
+      "name": "Apples",
+      "price": 20,
+      "description": "Fresh red apples",
+      "stockQuantity": 100
+    }
+
+
+###
+GET http://localhost:4004/odata/v4/grocery/Customers
+
+
+###
+GET http://localhost:4004/odata/v4/grocery/Orders
+
+
+###
+GET http://localhost:4004/odata/v4/grocery/OrderItems
+
+
+###
+GET http://localhost:4004/odata/v4/grocery/Items
