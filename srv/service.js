@@ -13,11 +13,36 @@ module.exports = function () {
       req.error(400, `Customer with ID ${customerID} not found.`);
     }
   });
+  this.after('READ', Orders, async (orders, req) => {
+    const orderIDs = Array.isArray(orders) ? orders.map(o => o.ID) : [orders.ID];
+  
+    // Fetch total amount for each order by summing totalItemPrice from OrderItems
+    if (orderIDs.length) {
+      const totals = await SELECT.from(OrderItems)
+        .columns('order_ID', 'SUM(totalItemPrice) as totalItemPrice') // Correctly sum and alias totalItemPrice
+        .where({ order_ID: { in: orderIDs } })
+        .groupBy('order_ID');
+  
+      if (Array.isArray(orders)) {
+        // If multiple orders are fetched
+        orders.forEach(order => {
+          const totalForOrder = totals.find(t => t.order_ID === order.ID);
+          order.totalAmount = totalForOrder ? totalForOrder.totalItemPrice : 0;
+        });
+      } else {
+        // If a single order is fetched
+        const totalForOrder = totals.find(t => t.order_ID === orders.ID);
+        orders.totalAmount = totalForOrder ? totalForOrder.totalItemPrice : 0;
+      }
+    }
+  });
+  
+  
+  
 
   // Logic to calculate total price for each order item before creating the OrderItems
   this.before('CREATE', OrderItems, async (req) => {
     const itemID = req.data.item_ID;
-    console.log(itemID)
     const quantity = req.data.quantity;
 
     // Fetch the item price from the Items entity
@@ -28,30 +53,12 @@ module.exports = function () {
     } else {
       req.error(400, `Item with ID ${itemID} not found.`);
     }
-  });
-
-  // After creating OrderItems, update the total amount in Orders
-  this.on('CREATE', OrderItems, async (req) => {
- 
     const orderID = req.data.order_ID;
-
-    const totalItemPrice = req.data.totalItemPrice;
-
-    // Fetch the related order
     const order = await SELECT.one.from(Orders).where({ ID: orderID });
-    if (order) {
-      // Initialize totalAmount if it's not set
-      let totalAmount = order.totalAmount;
-      totalAmount += totalItemPrice;
-
-      // Update the total amount in the Orders entity
-      await UPDATE(Orders).set({ totalAmount }).where({ ID: orderID });
-      await INSERT.into(OrderItems).entries(req.data);
-
-     return req.data
-
-    } else {
+    if(!order){
       req.error(400, `Order with ID ${orderID} not found.`);
     }
   });
+
+
 };
